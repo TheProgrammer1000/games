@@ -18,6 +18,7 @@ export default class Obstacle {
         const p1 = toScreen(this.xStart, this.yStart);
         const p2 = toScreen(this.xEnd, this.yEnd);
         stroke(this.color);
+
         line(p1.x, p1.y, p2.x, p2.y);
     }
 }

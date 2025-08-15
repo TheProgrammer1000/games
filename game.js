@@ -28,8 +28,14 @@ const bottomMathY = -canvasHeight; // negativ botten i math-enheter
 
 // Globala flaggor
 let isCollision = false;
-let initialSpeed = 2;
+let initialSpeed = 10;
 let angleRad;
+
+let ballAngle = 30;
+
+let trajectoryPoistionsArray;
+
+let isCollide = false;
 
 // -------------------
 // SETUP
@@ -37,10 +43,10 @@ let angleRad;
 window.setup = function () {
     createCanvas(canvasWidth, pixelHeight);
 
-    let x1 = -300;
-    let x2 = 300;
-    let y1 = -200;
-    let y2 = -200;
+    let x1 = -200;
+    let x2 = 200;
+    let y1 = -100;
+    let y2 = -100;
 
     frameRate(60);
 
@@ -50,18 +56,37 @@ window.setup = function () {
 
     angleRad = (-50 * PI) / 180;
 
-    let inital_vy = sin(angleRad) * initialSpeed;
-    let inital_vx = cos(angleRad) * initialSpeed;
-
     // Skapa boll i matte-koordinater (origin i mitten)
-    const { vx, vy } = velObjFromAngleDeg(initialSpeed, -50); // Negativ y = neråt
+    const { vx, vy } = velObjFromAngleDeg(initialSpeed, ballAngle); // Negativ y = neråt
     ball = {
-        pos: createVector(0, 0), // math coords
+        pos: createVector(-200, -200), // math coords
         vel: createVector(vx, vy), // math-units per frame
         radius: 20, // math-enheter
     };
 
-    calcKollisionWithObject(x1, x2, y1, y2, ball.vel.x, ball.vel.y, angleRad);
+    // calcKollisionWithObject(
+    //     x1,
+    //     x2,
+    //     y1,
+    //     y2,
+    //     ball.vel.x,
+    //     ball.vel.y,
+    //     angleRad,
+    //     ball.pos.x,
+    //     ball.pos.y
+    // );
+
+    trajectoryPoistionsArray = trajectory(
+        x1,
+        x2,
+        y1,
+        y2,
+        ball.vel.x,
+        ball.vel.y,
+        angleRad,
+        ball.pos.x,
+        ball.pos.y
+    );
 };
 
 // -------------------
@@ -110,44 +135,128 @@ function velObjFromAngleDeg(speed, angleDeg) {
     };
 }
 
-function calcKollisionWithObject(x1, x2, y1, y2, hx, hy, angle) {
-    console.log("x1: ", x1);
-    console.log("x2: ", x2);
-    console.log("y1: ", y1);
-    console.log("y2: ", y2);
+function trajectory(x1, x2, y1, y2, hx, hy, angle, ball_pos_x, ball_pos_y) {
+    // console.log("x1: ", x1);
+    // console.log("x2: ", x2);
+    // console.log("y1: ", y1);
+    // console.log("y2: ", y2);
     // console.log("ball_vel_vx: ", ball_vel_vx);
     // console.log("ball_vel_vy: ", ball_vel_vy);
 
     // console.log("angle: ", angle);
     let k = (y2 - y1) / (x2 - x1);
     let t = 0;
-    while (t < 1) {
+
+    let positions = [];
+
+    while (t < 150) {
         // Horizontell mark utan lutning
         if (k == 0 && y1 == y2 && x1 !== x2) {
             // console.log("k: ", k);
             // console.log("Sant");
 
-            // y = -200
+            /*
+                postion = y(t) = ball.pos.y + hy * t
+                
+                y1 = ball.pos.y + hy * t
+                y1 - ball.pos.y = hy * t
 
-            let secondsToCollideInY = hy * Math.sin(angle);
+                t = (y1 - ball.pos.y) / hy
+                
+                tid     =  t = 
 
-            console.log("secondsToCollideInY: ", secondsToCollideInY);
+            
+            */
 
-            if (secondsToCollideInY > 0) {
-                let ball_y_in_time = hy * secondsToCollideInY;
-                let ball_x_in_time = hx * secondsToCollideInY;
+            //
+            let tForFirstY = (y1 - ball.pos.y) / hy;
+            let tForSecondY = (y2 - ball.pos.y) / hy;
 
-                if (x1 <= ball_x_in_time <= x2 && y1 <= ball_y_in_time) {
-                    console.log("Kommer bli träff!");
+            let check_ball_pos_y;
+            let check_ball_pos_x;
+
+            if (tForFirstY > 0) {
+                check_ball_pos_y = ball_pos_y + hy * tForFirstY;
+                check_ball_pos_x = ball_pos_x + hx * tForFirstY;
+
+                // Samma behöver inget intervall på y1 eller y2
+                if (
+                    x1 <= check_ball_pos_x &&
+                    check_ball_pos_x <= x2 &&
+                    y1 <= check_ball_pos_y
+                ) {
+                    //console.log("Kommer bli kollision!");
+                    // console.log("Pos X: ", check_ball_pos_x);
+                    // console.log("Pos Y: ", check_ball_pos_y);
+
+                    let testBallX = ball.pos.x + hx * t;
+                    let testBallY = ball.pos.y + hy * t;
+
+                    positions.push({ x: testBallX, y: testBallY });
+
+                    //console.log("positions: ", positions);
+
+                    //console.log("testBallY: ", testBallY);
+                    //console.log("testBallX: ", testBallX);
+                }
+            } else if (tForSecondY > 0) {
+                check_ball_pos_y = ball_pos_y + hy * tForSecondY;
+                check_ball_pos_x = ball_pos_x + hx * tForSecondY;
+
+                if (
+                    x1 <= check_ball_pos_x &&
+                    check_ball_pos_x <= x2 &&
+                    y1 <= check_ball_pos_y
+                ) {
+                    console.log("Kommer bli kollision!");
+
+                    let testBallX = ball.pos.x + hx * t;
+                    let testBallY = ball.pos.y + hy * t;
+
+                    positions.push({ x: testBallX, y: testBallY });
                 }
             }
-
-            let yT = hy * t;
-            let xT = hx * t;
-
-            let new_yt;
+            t = t + 0.1;
+            // console.log("t: ", t);
         }
-        t = t + 1;
+    }
+
+    console.log("positions", positions);
+    return positions;
+}
+
+function ballCollision(x1, x2, y1, y2, ball) {
+    let ball_hastighet_vector = createVector(ball.vel.x, ball.vel.y);
+    let ytaVec = { x: x2 - x1, y: y2 - y1 };
+    let ytaRiktning = (y2 - y1) / (x2 - x1);
+
+    if (ytaRiktning == 0) {
+        let vinkelrättVec = createVector(-ytaVec.y, ytaVec.x);
+
+        /*
+            
+            d = ((xb​−x1​),(yb​−y1​))⋅
+
+            xb och yb är startpunkterna
+
+            P är bollens punkt  (xb, yb)
+            L x1, y1 Linjen startpunkt
+
+            P - L
+            d = ((ball.pos.x - x1) + (ball.pos.y - y1)) * vinkelrättVec
+
+        */
+        vinkelrättVec.normalize();
+        let dotproduct = ball_hastighet_vector.dot(vinkelrättVec);
+
+        /* När nog för kollision */
+        let fromBallToYta = createVector(ball.pos.x - x1, ball.pos.y - y1);
+        let diff = fromBallToYta.dot(vinkelrättVec);
+
+        if (diff <= ball.radius && dotproduct < 0) {
+            ball.vel.reflect(vinkelrättVec);
+            ball.pos.y += ball.radius - diff;
+        }
     }
 }
 
@@ -158,7 +267,29 @@ window.draw = function () {
     background(20);
     stroke(200);
 
-    // Rita axlar
+    //console.log("trajectoryPoistionsArray: ", trajectoryPoistionsArray);
+
+    stroke(255, 100, 100);
+    strokeWeight(3);
+
+    for (let i = 1; i < trajectoryPoistionsArray.length; i++) {
+        let prev = trajectoryPoistionsArray[i - 1];
+
+        let curr = trajectoryPoistionsArray[i];
+
+        const pointsPrev = toScreen(prev.x, prev.y);
+        const pointsCurr = toScreen(curr.x, curr.y);
+
+        line(pointsPrev.x, pointsPrev.y, pointsCurr.x, pointsCurr.y);
+    }
+
+    // console.log("mouseX: ", mouseX);
+    // console.log("mouseY: ", mouseY);
+
+    // Rita axlar i t.ex. vitt
+    stroke(200); // ändra färg innan axlar
+    strokeWeight(1);
+
     const yStart = toScreen(0, bottomMathY);
     const yEnd = toScreen(0, topMathY);
     line(yStart.x, yStart.y, yEnd.x, yEnd.y);
@@ -176,8 +307,17 @@ window.draw = function () {
     ellipse(screenPos.x, screenPos.y, ball.radius * 2 * mathScale);
 
     // Uppdatera bollens position i math-enheter
+
     ball.pos.x += ball.vel.x;
     ball.pos.y += ball.vel.y;
+
+    ballCollision(
+        obstacle.xStart,
+        obstacle.xEnd,
+        obstacle.yStart,
+        obstacle.yEnd,
+        ball
+    );
 
     //console.log(" ball.pos.y : ", ball.pos.y);
 
@@ -185,23 +325,4 @@ window.draw = function () {
     // Collision mot kanter (math-koordinater)
     // -------------------
     // BOTTEN
-    if (ball.pos.y < bottomMathY + ball.radius) {
-        let n = createVector(0, 1); // normal uppåt
-        ball.vel.reflect(n);
-    }
-    // TOPP
-    else if (ball.pos.y > topMathY - ball.radius) {
-        let n = createVector(0, -1); // normal nedåt
-        ball.vel.reflect(n);
-    }
-    // HÖGER
-    else if (ball.pos.x > rightMathX - ball.radius) {
-        let n = createVector(-1, 0); // normal vänster
-        ball.vel.reflect(n);
-    }
-    // VÄNSTER
-    else if (ball.pos.x < leftMathX + ball.radius) {
-        let n = createVector(1, 0); // normal höger
-        ball.vel.reflect(n);
-    }
 };
