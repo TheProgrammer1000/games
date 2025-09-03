@@ -10,6 +10,7 @@
         "p5": "^2.0.5"
     },
     "scripts": {
-        "dev": ""
+        "build": "tsc",
+        "watch": "tsc --watch"
     }
 }
