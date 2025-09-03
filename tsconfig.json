@@ -1,11 +1,14 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "none",
-        "strict": true,
+        "target": "ES2019",
+        "module": "commonjs",
+        "rootDir": "src",
         "outDir": "dist",
-        "allowJs": true,
-        "checkJs": true
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "lib": ["ES2020", "DOM"],
+        "types": ["node", "p5"]
     },
-    "include": ["src/**/*"]
+    "include": ["src"]
 }
