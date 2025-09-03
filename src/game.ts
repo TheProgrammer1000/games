@@ -4,7 +4,7 @@ let mainPlayer: MainPlayer;
 
 function setup(): void {
     createCanvas(800, 600);
-    mainPlayer = new MainPlayer(new Vector2(width / 2, height / 2));
+    mainPlayer = new MainPlayer(new Vector2(width / 2, height / 2), 20);
 }
 
 function draw(): void {
